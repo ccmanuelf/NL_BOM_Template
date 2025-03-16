@@ -1,4 +1,4 @@
-# NL_BOM_T
+# NL_BOM_Template
 
 Novalink BOM Builder Template - A Vue.js application for creating and managing Bill of Materials.
 
