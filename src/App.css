@@ -1,0 +1,28 @@
+/* Styles for Handsontable */
+.handsontable {
+  border-radius: 6px;
+  width: 100%;
+}
+
+/* Custom styles for the box containing tables */
+.box.has-shadow {
+  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1);
+}
+
+/* Ensure proper display of column headers with line breaks */
+.handsontable .ht_clone_top .htCore th {
+  white-space: normal !important;
+  height: auto !important;
+  padding: 4px !important;
+  vertical-align: middle !important;
+}
+
+/* Table header and cell styling */
+/* Removed custom z-index that might interfere with editor positioning */
+
+.handsontable .wtHider,
+.handsontable .wtSpreader {
+  padding: 0 !important;
+}
+
+/* Removed custom input holder styling that was causing editing issues */
