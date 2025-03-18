@@ -143,10 +143,13 @@ const verticalData = ref([
   ['Assembly Number', ''],
   ['Assembly Description', ''],
   ['Client Part Number', ''],
+  ['Product Unit of Measure', ''],
+  ['Set Definition', ''],
+  ['Product Weight (lb)', '0.000'],
+  ['Client\'s Rate (USD)', '0.000'],
+  ['Product SAH (Hrs)', '0.000'],
   ['Assembly Revision', 'Calculated'],
-  ['Creation Date', new Date().toLocaleString()],
   ['Part Count', '0'],
-  ['Weight (lb)', '0.000'],
   ['Labor', '0.000'],
   ['Total Part Cost', '0.0000'],
   ['Grand Total', '0.0000']
@@ -184,7 +187,7 @@ const horizontalSettings = ref({
     'Component Description',
     'Product\nQty',
     'Process\nQty',
-    'UofM US',
+    'UofM\nUS',
     'Origin',
     'Consumed At',
     'Cost per\nUoM',
@@ -193,12 +196,13 @@ const horizontalSettings = ref({
     'Notes'
   ],
   rowHeaders: true,
+  rowHeaderWidth: 30,
   licenseKey: 'non-commercial-and-evaluation',
   stretchH: 'all',
   contextMenu: true,
   height: 300,
   width: '100%',
-  colWidths: [120, 120, 200, 80, 80, 80, 80, 100, 100, 100, 100, 150],
+  colWidths: [150, 100, 200, 60, 60, 40, 45, 80, 60, 60, 50, 100],
   afterGetColHeader: (col, TH) => {
     const headerText = horizontalSettings.value.colHeaders[col] || ''
     if (headerText && headerText.includes('\n')) {
@@ -210,18 +214,18 @@ const horizontalSettings = ref({
     TH.className = 'htCenter htMiddle'
   },
   columns: [
-    { data: 0, type: 'text' },
-    { data: 1, type: 'text' },
-    { data: 2, type: 'text', wordWrap: true },
-    { data: 3, type: 'numeric', numericFormat: { pattern: '0.0000' } },
-    { data: 4, type: 'numeric', numericFormat: { pattern: '0.0000' } },
-    { data: 5, type: 'text' },
-    { data: 6, type: 'text' },
-    { data: 7, type: 'text' },
-    { data: 8, type: 'numeric', numericFormat: { pattern: '0.0000' } },
-    { data: 9, type: 'numeric', readOnly: true, numericFormat: { pattern: '0.0000' } },
-    { data: 10, type: 'checkbox' },
-    { data: 11, type: 'text' }
+    { data: 0, type: 'text', className: 'htCenter htMiddle' },
+    { data: 1, type: 'text', className: 'htCenter htMiddle' },
+    { data: 2, type: 'text', wordWrap: true, className: 'htCenter htMiddle' },
+    { data: 3, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
+    { data: 4, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
+    { data: 5, type: 'text', className: 'htCenter htMiddle' },
+    { data: 6, type: 'text', className: 'htCenter htMiddle' },
+    { data: 7, type: 'text', className: 'htCenter htMiddle' },
+    { data: 8, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
+    { data: 9, type: 'numeric', readOnly: true, numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
+    { data: 10, type: 'checkbox', className: 'htCenter htMiddle' },
+    { data: 11, type: 'text', className: 'htCenter htMiddle' }
   ]
 })
 
