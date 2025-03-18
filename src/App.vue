@@ -136,6 +136,7 @@ registerAllModules()
 const verticalTable = ref(null)
 const horizontalTable = ref(null)
 const revisionTable = ref(null)
+const bomStatus = ref('Draft')
 
 // Reactive data for tables
 const verticalData = ref([
@@ -193,17 +194,20 @@ const horizontalSettings = ref({
   ],
   rowHeaders: true,
   licenseKey: 'non-commercial-and-evaluation',
-  stretchH: 'none',
+  stretchH: 'all',
   contextMenu: true,
-  height: 300, // Add height to ensure table is visible
+  height: 300,
+  width: '100%',
+  colWidths: [120, 120, 200, 80, 80, 80, 80, 100, 100, 100, 100, 150],
   afterGetColHeader: (col, TH) => {
-    const headerText = horizontalSettings.value.colHeaders[col]
-    if (headerText.includes('\n')) {
+    const headerText = horizontalSettings.value.colHeaders[col] || ''
+    if (headerText && headerText.includes('\n')) {
       TH.innerHTML = headerText.split('\n').map(line => `<div>${line}</div>`).join('')
       TH.style.whiteSpace = 'normal'
       TH.style.height = 'auto'
       TH.style.verticalAlign = 'middle'
     }
+    TH.className = 'htCenter htMiddle'
   },
   columns: [
     { data: 0, type: 'text' },
