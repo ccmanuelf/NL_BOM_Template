@@ -76,12 +76,18 @@
                 </div>
 
                 <hr class="has-background-grey-lighter my-4" />
-                <h5 class="title is-5 has-text-centered mb-4">Revision History</h5>
+                <h5 class="title is-6 has-text-centered mb-4">Revision History</h5>
 
                 <hot-table
                   ref="revisionTable"
                   :settings="revisionSettings"
                   :rowHeaders="true"
+                ></hot-table>
+                <hr class="has-background-grey-lighter my-4" />
+                <hot-table
+                  ref="controlTable"
+                  :settings="controlSettings"
+                  :rowHeaders="false"
                 ></hot-table>
               </div>
             </div>
@@ -136,6 +142,7 @@ registerAllModules()
 const verticalTable = ref(null)
 const horizontalTable = ref(null)
 const revisionTable = ref(null)
+const controlTable = ref(null)
 const bomStatus = ref('Draft')
 
 // Reactive data for tables
@@ -160,6 +167,8 @@ const horizontalData = ref([
 ])
 
 const revisionData = ref([['Initial release', new Date().toLocaleString()]])
+
+const controlData = ref([[true, true]])
 
 // Settings for Handsontable
 const verticalSettings = ref({
@@ -192,7 +201,6 @@ const horizontalSettings = ref({
     'Consumed At',
     'Cost per\nUoM',
     'Total Cost',
-    'Including\nWaste',
     'Notes'
   ],
   rowHeaders: true,
@@ -202,7 +210,7 @@ const horizontalSettings = ref({
   contextMenu: true,
   height: 300,
   width: '100%',
-  colWidths: [150, 100, 200, 60, 60, 40, 45, 80, 60, 60, 50, 100],
+  colWidths: [150, 100, 200, 60, 60, 40, 45, 80, 60, 60, 100],
   afterGetColHeader: (col, TH) => {
     const headerText = horizontalSettings.value.colHeaders[col] || ''
     if (headerText && headerText.includes('\n')) {
@@ -224,7 +232,6 @@ const horizontalSettings = ref({
     { data: 7, type: 'text', className: 'htCenter htMiddle' },
     { data: 8, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
     { data: 9, type: 'numeric', readOnly: true, numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
-    { data: 10, type: 'checkbox', className: 'htCenter htMiddle' },
     { data: 11, type: 'text', className: 'htCenter htMiddle' }
   ]
 })
@@ -232,13 +239,29 @@ const horizontalSettings = ref({
 const revisionSettings = ref({
   data: revisionData.value,
   colHeaders: ['Changelog', 'Creation Date'],
+  headerClassName: 'htCenter',
   rowHeaders: true,
+  rowHeaderWidth: 20,
   licenseKey: 'non-commercial-and-evaluation',
   stretchH: 'all',
   contextMenu: true,
   columns: [
-    { data: 0, type: 'text', wordWrap: true },
-    { data: 1, type: 'text', readOnly: true }
+    { data: 0, type: 'text', wordWrap: true, className: 'htCenter htMiddle'  },
+    { data: 1, type: 'text', readOnly: true, className: 'htCenter htMiddle'  }
+  ]
+})
+
+const controlSettings = ref({
+  data: controlData.value,
+  colHeaders: ['Including Waste', 'Including Packaging'],
+  headerClassName: 'htCenter',
+  rowHeaders: false,
+  licenseKey: 'non-commercial-and-evaluation',
+  stretchH: 'all',
+  contextMenu: true,
+  columns: [
+    { data: 0, type: 'checkbox', className: 'htCenter htMiddle'},
+    { data: 1, type: 'checkbox', className: 'htCenter htMiddle'}
   ]
 })
 
@@ -258,6 +281,12 @@ watch(horizontalData, (newData) => {
 watch(revisionData, (newData) => {
   if (revisionTable.value?.hotInstance) {
     revisionTable.value.hotInstance.loadData(newData)
+  }
+}, { deep: true })
+
+watch(controlData, (newData) => {
+  if (controlTable.value?.hotInstance) {
+    controlTable.value.hotInstance.loadData(newData)
   }
 }, { deep: true })
 
