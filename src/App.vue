@@ -65,7 +65,7 @@
                       </div>
                     </div>
                     <div class="level-right">
-                      <button class="button is-danger is-outlined is-small has-text-weight-semibold">
+                      <button class="button is-danger is-outlined is-small has-text-weight-semibold" @click="clearContents">
                         <span class="icon is-small">
                           <i class="fas fa-trash-alt"></i>
                         </span>
@@ -144,6 +144,31 @@ const horizontalTable = ref(null)
 const revisionTable = ref(null)
 const controlTable = ref(null)
 const bomStatus = ref('Draft')
+
+// Initial default states for tables
+const defaultVerticalData = [
+  ['Assembly Number', ''],
+  ['Assembly Description', ''],
+  ['Client Part Number', ''],
+  ['Product Unit of Measure', ''],
+  ['Set Definition', ''],
+  ['Product Weight (lb)', '0.000'],
+  ['Client\'s Rate (USD)', '0.000'],
+  ['Product SAH (Hrs)', '0.000'],
+  ['Assembly Revision', 'Calculated'],
+  ['Part Count', '0'],
+  ['Labor', '0.000'],
+  ['Total Part Cost', '0.0000'],
+  ['Grand Total', '0.0000']
+]
+
+const defaultHorizontalData = [
+  ['', '', '', 0.0000, 0.0000, '', '', '', 0.0000, 0.0000, false, '']
+]
+
+const defaultRevisionData = [['Initial release', new Date().toLocaleString()]]
+
+const defaultControlData = [[true, true]]
 
 // Reactive data for tables
 const verticalData = ref([
@@ -352,6 +377,17 @@ const removeRow = () => {
     horizontalData.value.splice(startRow, 1)
   } else {
     horizontalData.value.pop()
+  }
+}
+
+// Clear contents with confirmation
+const clearContents = () => {
+  if (confirm('Are you sure you want to clear all contents? This action cannot be undone.')) {
+    // Reset all tables to their default states
+    verticalData.value = JSON.parse(JSON.stringify(defaultVerticalData))
+    horizontalData.value = JSON.parse(JSON.stringify(defaultHorizontalData))
+    revisionData.value = [['Initial release', new Date().toLocaleString()]]
+    controlData.value = JSON.parse(JSON.stringify(defaultControlData))
   }
 }
 </script>
