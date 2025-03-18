@@ -106,12 +106,12 @@
               </span>
             </p>
             <div class="card-header-icons">
-              <button class="button is-success is-small is-outlined mr-1">
+              <button class="button is-success is-small is-outlined mr-1" @click="addRow">
                 <span class="icon is-small">
                   <i class="fas fa-plus"></i>
                 </span>
               </button>
-              <button class="button is-danger is-small is-outlined">
+              <button class="button is-danger is-small is-outlined" @click="removeRow">
                 <span class="icon is-small">
                   <i class="fas fa-minus"></i>
                 </span>
@@ -320,6 +320,39 @@ const afterHorizontalChange = (changes) => {
       horizontalData.value[row][9] = totalCost.toFixed(4)
     }
   })
+}
+
+// Add a new row to the horizontal table
+const addRow = () => {
+  const hotInstance = horizontalTable.value.hotInstance
+  const selectedRows = hotInstance.getSelected()
+  const emptyRow = ['', '', '', 0.0000, 0.0000, '', '', '', 0.0000, 0.0000, false, '']
+  
+  if (selectedRows && selectedRows[0]) {
+    const [, startRow] = selectedRows[0]
+    horizontalData.value.splice(startRow + 1, 0, emptyRow)
+  } else {
+    horizontalData.value.push(emptyRow)
+  }
+}
+
+// Remove a row from the horizontal table
+const removeRow = () => {
+  const hotInstance = horizontalTable.value.hotInstance
+  const selectedRows = hotInstance.getSelected()
+  
+  if (horizontalData.value.length === 1) {
+    // If only one row exists, clear its contents
+    horizontalData.value[0] = ['', '', '', 0.0000, 0.0000, '', '', '', 0.0000, 0.0000, false, '']
+    return
+  }
+  
+  if (selectedRows && selectedRows[0]) {
+    const [, startRow] = selectedRows[0]
+    horizontalData.value.splice(startRow, 1)
+  } else {
+    horizontalData.value.pop()
+  }
 }
 </script>
 
