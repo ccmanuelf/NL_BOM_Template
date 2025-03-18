@@ -124,9 +124,12 @@
 import { onMounted, ref } from 'vue'
 import { registerAllModules } from 'handsontable/registry'
 import { HotTable } from '@handsontable/vue3'
-import 'handsontable/dist/handsontable.full.min.css'
-// The Main Light theme is included in the full CSS
+// Import order matters for CSS priority:
+// 1. Bulma (base framework)
+// 2. Handsontable (component-specific styles)
+// 3. Custom styles (overrides)
 import 'bulma/css/bulma.min.css'
+import 'handsontable/dist/handsontable.full.min.css'
 import './App.css'
 import './custom-spacing.css'
 
@@ -162,7 +165,7 @@ const verticalHeaders = ref(['Field Name', 'Value'])
 // Configure header settings for vertical table
 const verticalHeaderSettings = {
   className: 'htCenter htMiddle',
-  height: 30 // Ensure consistent header height
+  height: 10 // Ensure consistent header height
 }
 
 // Data for horizontal table
@@ -226,9 +229,7 @@ const verticalSettings = ref({
   colWidths: [120, 380],
   copyPaste: true,
   theme: 'ht-theme-main',
-  rowHeights: (row) => {
-    return row === 0 ? 45 : 30;
-  },
+  rowHeights: 10,
   afterGetColHeader: (col, TH) => {
     TH.className = 'htCenter htMiddle';
   },
@@ -340,7 +341,7 @@ const horizontalSettings = ref({
       TH.style.whiteSpace = 'normal';
       TH.style.height = 'auto';
       TH.style.verticalAlign = 'middle';
-      TH.style.padding = '4px';
+      TH.style.padding = '1px';
     }
   },
   cells(row, col) {

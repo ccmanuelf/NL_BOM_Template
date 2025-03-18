@@ -1,7 +1,10 @@
-/* Styles for Handsontable */
+/* Styles for Handsontable - These take highest priority */
 .handsontable {
   border-radius: 6px;
   width: 100%;
+  /* Ensure Handsontable base styles take precedence */
+  z-index: 1; /* Ensure proper stacking context */
+  /* No !important needed as Handsontable styles should take precedence naturally */
 }
 
 /* Custom styles for the box containing tables */
@@ -11,18 +14,59 @@
 
 /* Ensure proper display of column headers with line breaks */
 .handsontable .ht_clone_top .htCore th {
-  white-space: normal !important;
-  height: auto !important;
-  padding: 4px !important;
-  vertical-align: middle !important;
+  white-space: normal;
+  height: auto;
+  padding: 4px;
+  vertical-align: middle;
 }
 
 /* Table header and cell styling */
-/* Removed custom z-index that might interfere with editor positioning */
-
 .handsontable .wtHider,
 .handsontable .wtSpreader {
-  padding: 0 !important;
+  /* No custom styling needed - rely on Handsontable's internal layout */
 }
 
+/* Additional spacing for better readability */
+.handsontable .htCore td,
+.handsontable .htCore th {
+  padding: 6px 8px; /* Adjusted padding for better alignment */
+}
+
+/* Ensure consistent alignment for numeric columns */
+.handsontable .htNumeric {
+  text-align: right;
+}
+
+/* Ensure proper alignment for checkbox columns */
+.handsontable .htCheckbox {
+  text-align: center;
+}
+
+/* Custom styling for multi-line text cells */
+.handsontable .htLeft {
+  text-align: left;
+}
+
+.handsontable .htCenter {
+  text-align: center;
+}
+
+/* Ensure proper word wrapping for description fields */
+.handsontable .htWrap {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* Remove unnecessary overrides */
 /* Removed custom input holder styling that was causing editing issues */
+
+/* Note: CSS priority in this project should be:
+   1. Handsontable specific styles (highest priority)
+   2. Bulma framework styles
+   3. Custom spacing and UI enhancements (lowest priority)
+*/
+
+/* Optional: Add hover effect for rows */
+.handsontable tbody tr:hover td {
+  background-color: rgba(0, 0, 0, 0.05); /* Subtle hover effect */
+}
