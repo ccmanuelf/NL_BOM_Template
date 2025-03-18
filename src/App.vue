@@ -132,18 +132,41 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { HotTable } from '@handsontable/vue3'
 import { registerAllModules } from 'handsontable/registry'
 import Handsontable from 'handsontable'
+import { getUserData, getBomContent, getBomStatus, validateBomData } from './services/api'
 
 registerAllModules()
+
+// Mock token for development
+const authToken = ref('66|6VR9CUqvsAFoKue00nbfsjWAoC9CLNZ06b9XbL6e')
+const userData = ref(null)
+const validationErrors = ref([])
 
 const verticalTable = ref(null)
 const horizontalTable = ref(null)
 const revisionTable = ref(null)
 const controlTable = ref(null)
 const bomStatus = ref('Draft')
+
+// Initialize user data and BOM status
+onMounted(async () => {
+  try {
+    // Get user data
+    userData.value = await getUserData(authToken.value)
+    
+    // Get BOM status if product ID exists
+    const productId = verticalData.value[0][1]
+    if (productId) {
+      const status = await getBomStatus(authToken.value, productId)
+      bomStatus.value = status.status
+    }
+  } catch (error) {
+    console.error('Error initializing data:', error)
+  }
+})
 
 // Initial default states for tables
 const defaultVerticalData = [
@@ -316,9 +339,13 @@ watch(controlData, (newData) => {
 }, { deep: true })
 
 // Handle afterChange events
-const afterVerticalChange = (changes) => {
+const afterVerticalChange = async (changes) => {
   if (!changes) return
-  changes.forEach(([row, prop, oldValue, newValue]) => {
+  
+  // Clear previous validation errors
+  validationErrors.value = []
+  
+  changes.forEach(async ([row, prop, oldValue, newValue]) => {
     if (prop === 1 && row === 6) {
       // Recalculate Labor and Grand Total based on Weight
       const weight = parseFloat(newValue) || 0
@@ -331,9 +358,13 @@ const afterVerticalChange = (changes) => {
   })
 }
 
-const afterHorizontalChange = (changes) => {
+const afterHorizontalChange = async (changes) => {
   if (!changes) return
-  changes.forEach(([row, prop, oldValue, newValue]) => {
+  
+  // Clear previous validation errors
+  validationErrors.value = []
+  
+  changes.forEach(async ([row, prop, oldValue, newValue]) => {
     if (prop === 3 || prop === 4 || prop === 8 || prop === 10) {
       const productQty = parseFloat(horizontalData.value[row][3]) || 0
       const processQty = parseFloat(horizontalData.value[row][4]) || 0
@@ -381,8 +412,10 @@ const removeRow = () => {
 }
 
 // Clear contents with confirmation
-const clearContents = () => {
+const clearContents = async () => {
   if (confirm('Are you sure you want to clear all contents? This action cannot be undone.')) {
+    // Clear validation errors
+    validationErrors.value = []
     // Reset all tables to their default states
     verticalData.value = JSON.parse(JSON.stringify(defaultVerticalData))
     horizontalData.value = JSON.parse(JSON.stringify(defaultHorizontalData))
