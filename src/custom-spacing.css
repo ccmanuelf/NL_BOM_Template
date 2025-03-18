@@ -4,11 +4,11 @@
   padding-bottom: 1rem;
 }
 
-/* Reduce margin below the main title 
+/* Reduce margin below the main title */
 .title.is-2.mb-6 {
   margin-bottom: 1rem;
 }
-*/
+
 /* Reduce margin between BOM Master Data and BOM Contents Definition */
 .mb-4 {
   margin-bottom: 1rem;

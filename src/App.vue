@@ -50,13 +50,13 @@
                   <div class="level is-mobile mb-0">
                     <div class="level-left">
                       <div class="buttons are-small">
-                        <button class="button is-primary is-outlined">
+                        <button class="button is-primary is-outlined has-text-weight-semibold">
                           <span class="icon is-small">
                             <i class="fas fa-file-upload"></i>
                           </span>
                           <span>Load BOM</span>
                         </button>
-                        <button class="button is-info is-outlined">
+                        <button class="button is-info is-outlined has-text-weight-semibold">
                           <span class="icon is-small">
                             <i class="fas fa-save"></i>
                           </span>
@@ -65,7 +65,7 @@
                       </div>
                     </div>
                     <div class="level-right">
-                      <button class="button is-warning is-outlined is-small">
+                      <button class="button is-danger is-outlined is-small has-text-weight-semibold">
                         <span class="icon is-small">
                           <i class="fas fa-trash-alt"></i>
                         </span>
@@ -346,5 +346,11 @@ const afterHorizontalChange = (changes) => {
 
 .handsontable .htCore td {
   padding: 6px 8px;
+}
+
+.button:active {
+  transform: scale(0.65);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.05s ease-in-out;
 }
 </style>
