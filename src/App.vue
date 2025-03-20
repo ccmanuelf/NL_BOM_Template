@@ -47,16 +47,17 @@
               <div class="card-content p-2">
                 <div class="field">
                   <label class="label is-small">BOM Status = {{ bomStatus }}</label>
+                  <p v-if="errorMessage" class="help is-danger">{{ errorMessage }}</p>
                   <div class="level is-mobile mb-0">
                     <div class="level-left">
                       <div class="buttons are-small">
-                        <button class="button is-primary is-outlined has-text-weight-semibold">
+                        <button class="button is-primary is-outlined has-text-weight-semibold" @click="loadBom('3810-8000000')" :class="{ 'is-loading': isLoading }" :disabled="isLoading">
                           <span class="icon is-small">
                             <i class="fas fa-file-upload"></i>
                           </span>
                           <span>Load BOM</span>
                         </button>
-                        <button class="button is-info is-outlined has-text-weight-semibold">
+                        <button class="button is-info is-outlined has-text-weight-semibold" @click="saveBomData" :class="{ 'is-loading': isLoading }" :disabled="isLoading">
                           <span class="icon is-small">
                             <i class="fas fa-save"></i>
                           </span>
@@ -136,7 +137,7 @@ import { ref, watch, onMounted } from 'vue'
 import { HotTable } from '@handsontable/vue3'
 import { registerAllModules } from 'handsontable/registry'
 import Handsontable from 'handsontable'
-import { getUserData, getBomContent, getBomStatus, validateBomData } from './services/api'
+import { getUserData, getBomContent, getBomStatus, validateBomData, getBomMasterData, saveBom } from './services/api'
 
 registerAllModules()
 
@@ -150,6 +151,92 @@ const horizontalTable = ref(null)
 const revisionTable = ref(null)
 const controlTable = ref(null)
 const bomStatus = ref('Draft')
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+// Load existing BOM data
+const loadBom = async (productId) => {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    // Get BOM master data
+    const masterData = await getBomMasterData(authToken.value, productId)
+    
+    // Update vertical data
+    verticalData.value = [
+      ['Assembly Number', masterData.assemblyNumber],
+      ['Assembly Description', masterData.assemblyDescription],
+      ['Client Part Number', masterData.clientPartNumber],
+      ['Product Unit of Measure', masterData.productUnitOfMeasure],
+      ['Set Definition', masterData.setDefinition],
+      ['Product Weight (lb)', masterData.productWeight.toFixed(3)],
+      ['Client\'s Rate (USD)', masterData.clientRate.toFixed(3)],
+      ['Product SAH (Hrs)', masterData.productSAH.toFixed(3)],
+      ['Assembly Revision', masterData.assemblyRevision],
+      ['Part Count', masterData.partCount],
+      ['Labor', masterData.labor.toFixed(3)],
+      ['Total Part Cost', masterData.totalPartCost.toFixed(4)],
+      ['Grand Total', masterData.grandTotal.toFixed(4)]
+    ]
+    
+    // Get BOM contents
+    const contents = await getBomContent(authToken.value, productId)
+    horizontalData.value = contents.map(item => [
+      item.component,
+      item.description,
+      item.um_us,
+      item.unit_cost,
+      item.weight,
+      item.origin,
+      item.comments,
+      item.notes,
+      item.consumed_at,
+      item.unit_cost,
+      false,
+      ''
+    ])
+    
+    // Update revision history and controls
+    revisionData.value = masterData.revisionHistory
+    controlData.value = masterData.controls
+    
+    // Update BOM status
+    const status = await getBomStatus(authToken.value, productId)
+    bomStatus.value = status.status
+  } catch (error) {
+    errorMessage.value = error.error || 'Error loading BOM data'
+    console.error('Error loading BOM:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Save current BOM data
+const saveBomData = async () => {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+    
+    const bomData = {
+      product_id: verticalData.value[0][1],
+      component: horizontalData.value[0][0],
+      description: horizontalData.value[0][1],
+      um_us: horizontalData.value[0][2],
+      origin: horizontalData.value[0][5],
+      unit_cost: parseFloat(horizontalData.value[0][3]),
+      weight: parseFloat(horizontalData.value[0][4])
+    }
+    
+    await saveBom(authToken.value, bomData)
+    bomStatus.value = 'Draft'
+  } catch (error) {
+    errorMessage.value = error.details ? error.details.join(', ') : (error.error || 'Error saving BOM')
+    console.error('Error saving BOM:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 
 // Initialize user data and BOM status
 onMounted(async () => {
@@ -180,13 +267,13 @@ const defaultVerticalData = [
   ['Product SAH (Hrs)', '0.000'],
   ['Assembly Revision', 'Calculated'],
   ['Part Count', '0'],
-  ['Labor', '0.000'],
+  ['Labor', '0.0000'],
   ['Total Part Cost', '0.0000'],
   ['Grand Total', '0.0000']
 ]
 
 const defaultHorizontalData = [
-  ['', '', '', 0.0000, 0.0000, '', '', '', 0.0000, 0.0000, false, '']
+  ['', '', '', 0.0000, 0.0000, '', '', '', 0.0000, 0.0000, '']
 ]
 
 const defaultRevisionData = [['Initial release', new Date().toLocaleString()]]
@@ -194,29 +281,10 @@ const defaultRevisionData = [['Initial release', new Date().toLocaleString()]]
 const defaultControlData = [[true, true]]
 
 // Reactive data for tables
-const verticalData = ref([
-  ['Assembly Number', ''],
-  ['Assembly Description', ''],
-  ['Client Part Number', ''],
-  ['Product Unit of Measure', ''],
-  ['Set Definition', ''],
-  ['Product Weight (lb)', '0.000'],
-  ['Client\'s Rate (USD)', '0.000'],
-  ['Product SAH (Hrs)', '0.000'],
-  ['Assembly Revision', 'Calculated'],
-  ['Part Count', '0'],
-  ['Labor', '0.000'],
-  ['Total Part Cost', '0.0000'],
-  ['Grand Total', '0.0000']
-])
-
-const horizontalData = ref([
-  ['', '', '', 0.0000, 0.0000, '', '', '', 0.0000, 0.0000, false, '']
-])
-
+const verticalData = ref(JSON.parse(JSON.stringify(defaultVerticalData)))
+const horizontalData = ref(JSON.parse(JSON.stringify(defaultHorizontalData)))
 const revisionData = ref([['Initial release', new Date().toLocaleString()]])
-
-const controlData = ref([[true, true]])
+const controlData = ref(JSON.parse(JSON.stringify(defaultControlData)))
 
 // Settings for Handsontable
 const verticalSettings = ref({
@@ -229,8 +297,25 @@ const verticalSettings = ref({
   colWidths: [200, null],
   columns: [
     { data: 0, readOnly: true, className: 'htCenter htMiddle' },
-    { data: 1, className: 'htCenter htMiddle' }
+    { data: 1, className: 'htCenter htMiddle', type: 'text' }
   ],
+  cells(row) {
+    const cell = { className: 'htCenter htMiddle' }
+    if ([5,7].includes(row)) {
+      cell.type = 'numeric'
+      cell.numericFormat = { pattern: '0.000' }
+    } else if ([6].includes(row)) {
+      cell.type = 'numeric'
+      cell.numericFormat = { pattern: '$ 0,0.0000', culture: 'en-US' }
+    }else if ([10,11,12].includes(row)) {
+      cell.type = 'numeric'
+      cell.readOnly = true
+      cell.numericFormat = { pattern: '$ 0,0.0000', culture: 'en-US' }
+    } else if ([8,9].includes(row)) {
+      cell.readOnly = true
+    }
+    return cell
+  },
   afterGetColHeader: (col, TH) => {
     TH.className = 'htCenter htMiddle'
   }
@@ -258,7 +343,7 @@ const horizontalSettings = ref({
   contextMenu: true,
   height: 300,
   width: '100%',
-  colWidths: [150, 100, 200, 60, 60, 40, 45, 80, 60, 60, 100],
+  colWidths: [150, 80, 200, 60, 60, 40, 45, 80, 70, 70, 100],
   afterGetColHeader: (col, TH) => {
     const headerText = horizontalSettings.value.colHeaders[col] || ''
     if (headerText && headerText.includes('\n')) {
@@ -272,14 +357,14 @@ const horizontalSettings = ref({
   columns: [
     { data: 0, type: 'text', className: 'htCenter htMiddle' },
     { data: 1, type: 'text', className: 'htCenter htMiddle' },
-    { data: 2, type: 'text', wordWrap: true, className: 'htCenter htMiddle' },
+    { data: 2, type: 'text', readOnly: true, wordWrap: true, className: 'htCenter htMiddle' },
     { data: 3, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
     { data: 4, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
-    { data: 5, type: 'text', className: 'htCenter htMiddle' },
-    { data: 6, type: 'text', className: 'htCenter htMiddle' },
+    { data: 5, type: 'text', readOnly: true, className: 'htCenter htMiddle' },
+    { data: 6, type: 'text', readOnly: true, className: 'htCenter htMiddle' },
     { data: 7, type: 'text', className: 'htCenter htMiddle' },
-    { data: 8, type: 'numeric', numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
-    { data: 9, type: 'numeric', readOnly: true, numericFormat: { pattern: '0.0000' }, className: 'htCenter htMiddle' },
+    { data: 8, type: 'numeric', readOnly: true, numericFormat: { pattern: '$0,0.0000', culture: 'en-US' }, className: 'htCenter htMiddle' },
+    { data: 9, type: 'numeric', readOnly: true, numericFormat: { pattern: '$0,0.0000', culture: 'en-US' }, className: 'htCenter htMiddle' },
     { data: 11, type: 'text', className: 'htCenter htMiddle' }
   ]
 })
@@ -411,16 +496,26 @@ const removeRow = () => {
   }
 }
 
+// Initialize new BOM with default values
+const initializeNewBom = () => {
+  // Clear validation errors
+  validationErrors.value = []
+  errorMessage.value = ''
+  
+  // Reset BOM status
+  bomStatus.value = 'Draft'
+  
+  // Reset all tables to their default states
+  verticalData.value = JSON.parse(JSON.stringify(defaultVerticalData))
+  horizontalData.value = JSON.parse(JSON.stringify(defaultHorizontalData))
+  revisionData.value = [['Initial release', new Date().toLocaleString()]]
+  controlData.value = JSON.parse(JSON.stringify(defaultControlData))
+}
+
 // Clear contents with confirmation
 const clearContents = async () => {
   if (confirm('Are you sure you want to clear all contents? This action cannot be undone.')) {
-    // Clear validation errors
-    validationErrors.value = []
-    // Reset all tables to their default states
-    verticalData.value = JSON.parse(JSON.stringify(defaultVerticalData))
-    horizontalData.value = JSON.parse(JSON.stringify(defaultHorizontalData))
-    revisionData.value = [['Initial release', new Date().toLocaleString()]]
-    controlData.value = JSON.parse(JSON.stringify(defaultControlData))
+    initializeNewBom()
   }
 }
 </script>

@@ -9,6 +9,30 @@ const mockErrors = {
   serverError: { error: 'Internal server error', code: 500 }
 }
 
+// Mock BOM master data
+const mockBomMasterData = {
+  '3810-8000000': {
+    assemblyNumber: '3810-8000000',
+    assemblyDescription: 'Metal Cutting Die Assembly',
+    clientPartNumber: 'PRO-872',
+    productUnitOfMeasure: 'PCS',
+    setDefinition: 'Single',
+    productWeight: 2.9,
+    clientRate: 250.00,
+    productSAH: 1.5,
+    assemblyRevision: 'Rev A',
+    partCount: 1,
+    labor: 45.00,
+    totalPartCost: 190.00,
+    grandTotal: 235.00,
+    revisionHistory: [
+      ['Initial release', '2023-12-01 10:00:00'],
+      ['Updated weight', '2023-12-02 15:30:00']
+    ],
+    controls: [[true, false]]
+  }
+}
+
 // Mock data for testing
 const mockUserData = {
   user: {
@@ -130,6 +154,38 @@ export const getClientName = async (token, clientId) => {
 }
 
 // Data validation functions
+// Save BOM data
+export const saveBom = async (token, bomData) => {
+  if (!token) throw mockErrors.unauthorized
+  if (!bomData) throw mockErrors.invalidData
+
+  const validation = validateBomData(bomData)
+  if (!validation.isValid) {
+    throw { ...mockErrors.invalidData, details: validation.errors }
+  }
+
+  // Simulate successful save
+  return {
+    success: true,
+    message: 'BOM saved successfully',
+    timestamp: new Date().toISOString()
+  }
+}
+
+// Get BOM master data
+export const getBomMasterData = async (token, productId) => {
+  if (!token) throw mockErrors.unauthorized
+  if (!productId) throw mockErrors.invalidData
+
+  const bomData = mockBomMasterData[productId]
+  if (!bomData) {
+    throw mockErrors.notFound
+  }
+
+  return bomData
+}
+
+// Validate BOM data
 export const validateBomData = (data) => {
   const errors = []
 
